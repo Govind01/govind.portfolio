@@ -1,7 +1,7 @@
 export const profile = {
   name: "Govind",
   role: "Full-stack developer",
-  location: "Brooklyn, NY",
+  location: "Noida, India",
   email: "gtech.tech12@gmail.com",
   socials: {
     github: "https://github.com/Govind01",
