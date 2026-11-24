@@ -45,6 +45,7 @@ function App() {
   const [activeFilter, setActiveFilter] = useState('All work');
   const [menuOpen, setMenuOpen] = useState(false);
   const [formState, setFormState] = useState('idle');
+  const [formMessage, setFormMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const visibleProjects = profile.projects.filter((project) => activeFilter === 'All work' || project.category === activeFilter);
 
@@ -69,14 +70,38 @@ function App() {
     }
   };
 
-  const submitContact = (event) => {
+  const submitContact = async (event) => {
     event.preventDefault();
     const formElement = event.currentTarget;
-    const message = Object.fromEntries(new FormData(formElement).entries());
-    const subject = `Portfolio inquiry from ${message.name}`;
-    const body = `Name: ${message.name}\nEmail: ${message.email}\n\n${message.message}`;
-    window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setFormState('drafted');
+    const formData = Object.fromEntries(new FormData(formElement).entries());
+    const payload = {
+      name: String(formData.name || '').trim(),
+      email: String(formData.email || '').trim(),
+      message: String(formData.message || '').trim(),
+    };
+
+    setFormState('submitting');
+    setFormMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Unable to save your message right now.');
+      }
+
+      formElement.reset();
+      setFormState('success');
+      setFormMessage(data.message || 'Your message has been saved.');
+    } catch (error) {
+      setFormState('error');
+      setFormMessage(error.message || 'Unable to save your message right now.');
+    }
   };
 
   const closeMenu = () => setMenuOpen(false);
@@ -133,7 +158,7 @@ function App() {
         </div></section>
 
         <section className="contact-section section-wrap reveal" id="contact"><div className="contact-copy"><div className="eyebrow"><span className="eyebrow-line" /> YOUR TURN</div><h2>Have a good<br />problem to solve<span className="headline-period">?</span></h2><p>I’m always up for talking through a thoughtful idea, an interesting challenge, or how we might work together.</p><button className="email-button" onClick={copyEmail}><span className="email-icon">{copied ? <Check size={18} /> : <Mail size={18} />}</span>{copied ? 'Email copied' : profile.email}<ArrowUpRight size={16} /></button><div className="social-links"><a href={profile.socials.github} target="_blank" rel="noreferrer"><Github size={17} /> GitHub <ArrowUpRight size={13} /></a><a href={profile.socials.linkedin} target="_blank" rel="noreferrer"><Linkedin size={17} /> LinkedIn <ArrowUpRight size={13} /></a></div></div>
-          <form className="contact-form" onSubmit={submitContact}><div className="form-heading"><span>START A CONVERSATION</span><span className="form-required">* REQUIRED</span></div><label htmlFor="name">Your name <span>*</span></label><input id="name" name="name" placeholder="What should I call you?" autoComplete="name" required minLength="2" maxLength="80" /><label htmlFor="email">Email address <span>*</span></label><input id="email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength="120" /><label htmlFor="message">A little about your project <span>*</span></label><textarea id="message" name="message" placeholder="What are you looking to make?" rows="4" required minLength="10" maxLength="3000" /><button className="button button-primary form-submit" type="submit">Open email draft <ArrowUpRight size={17} /></button>{formState === 'drafted' && <p className="form-feedback success" role="status">Your email app should open with a draft. Send it when you’re ready.</p>}</form>
+          <form className="contact-form" onSubmit={submitContact}><div className="form-heading"><span>START A CONVERSATION</span><span className="form-required">* REQUIRED</span></div><label htmlFor="name">Your name <span>*</span></label><input id="name" name="name" placeholder="What should I call you?" autoComplete="name" required minLength="2" maxLength="80" /><label htmlFor="email">Email address <span>*</span></label><input id="email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength="120" /><label htmlFor="message">A little about your project <span>*</span></label><textarea id="message" name="message" placeholder="What are you looking to make?" rows="4" required minLength="10" maxLength="3000" /><button className="button button-primary form-submit" type="submit" disabled={formState === 'submitting'}>{formState === 'submitting' ? 'Saving...' : 'Send message'} <ArrowUpRight size={17} /></button>{formState === 'success' && formMessage && <p className="form-feedback success" role="status">{formMessage}</p>}{formState === 'error' && formMessage && <p className="form-feedback error" role="alert">{formMessage}</p>}</form>
         </section>
       </main>
 

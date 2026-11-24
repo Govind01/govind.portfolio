@@ -221,7 +221,7 @@ p {
   position: relative;
   display: inline-block;
   min-width: 0.9em;
-  color: var(--paper);
+  color: var(--lime);
   vertical-align: baseline;
 }
 .software-base,
@@ -240,7 +240,7 @@ p {
 }
 .software-fallback {
   opacity: 0;
-  color: var(--lime);
+  color: inherit;
   animation-delay: 5s;
 }
 .headline-period {
