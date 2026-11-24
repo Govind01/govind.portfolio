@@ -30,6 +30,8 @@ jobs:
         run: npm ci
       - name: Build portfolio
         run: npm run build --workspace client
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

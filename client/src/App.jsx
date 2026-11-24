@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowDownRight, ArrowRight, ArrowUpRight, Check, Code2, Download, Github, Linkedin, Mail, Menu, X } from 'lucide-react';
 import { profile } from './profile.js';
 
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const filters = ['All work', 'Full-stack', 'Frontend'];
 
 function App() {
@@ -84,7 +85,7 @@ function App() {
     setFormMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
